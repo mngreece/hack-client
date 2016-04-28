@@ -34,8 +34,75 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+
+        alert('1234');
+
+        if(typeof nfc !== 'undefined') {alert('1');} else {alert('2');}
+
+        function failure(reason) {
+            navigator.notification.alert(reason, function() {}, "There was a problem");
+        }
+
+        nfc.addNdefListener (
+            app.onNdef,
+            function () { // success callback
+                alert("Waiting for NDEF tag");
+            },
+            function (error) { // error callback
+                alert("Error adding NDEF listener " + JSON.stringify(error));
+            }
+        );
+
+        if (device.platform == "Android") {
+
+            // Android reads non-NDEF tag. BlackBerry and Windows don't.
+            nfc.addTagDiscoveredListener(
+                app.onNfc,
+                function() {
+                    console.log("Listening for non-NDEF tags.");
+                },
+                failure
+            );
+
+            nfc.addMimeTypeListener(
+                '',
+                app.onNdef,
+                function () { // success callback
+                    alert("Waiting for NDEF tag");
+                },
+                failure
+            );
+
+            nfc.addMimeTypeListener(
+                'text/pg',
+                app.onNdef,
+                function () { // success callback
+                    alert("Waiting for NDEF tag");
+                },
+                failure
+            );
+        }
     },
-    // Update DOM on a Received Event
+    onNfc: function (nfcEvent) {
+
+        var tag = nfcEvent.tag;
+
+        alert('122342432423');
+
+        alert("onNfc: " + JSON.stringify(nfcEvent.tag) +  + ": message" + tag.ndefMessage);
+
+        navigator.notification.vibrate(100);
+    },
+    onNdef: function (nfcEvent) {
+
+        var tag = nfcEvent.tag;
+
+        alert('fdsjifsdjkfhjsd');
+
+        alert("onNdef: " + JSON.stringify(tag) + ": message" + tag.ndefMessage);
+
+        navigator.notification.vibrate(100);
+    },
     receivedEvent: function(id) {
         var parentElement = document.getElementById(id);
         var listeningElement = parentElement.querySelector('.listening');
